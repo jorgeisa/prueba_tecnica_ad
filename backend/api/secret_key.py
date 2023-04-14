@@ -1,1 +1,1 @@
-API_KEY = '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'
+API_KEY = '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'
