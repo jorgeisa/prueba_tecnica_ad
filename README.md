@@ -31,6 +31,35 @@ Instalacion de OpenAI en Python
 pip install openai
 ```
 
+Instalacion de django-corse-headers
+```
+python -m pip install django-cors-headers
+```
+
+Para poder consumir nuestra API en django es necesario activar el CORS en Django. Por lo que debemos editas las siguientes partes de nuestro codigo en el archivo "settings.py" de nuestro proyecto. En este repositorio estan los pasos: [Repositorio Cors.](https://github.com/adamchainz/django-cors-headers)
+
+```python
+#Archivo backend>settings.py
+INSTALLED_APPS = [
+    ...
+    "corsheaders",
+    ...
+]
+
+MIDDLEWARE = [
+    ...
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    ...
+]
+
+...
+CORS_ALLOW_ALL_ORIGINS = True
+...
+```
+
+
+
 ### Comandos importantes
 
 ### _virtualenv_
