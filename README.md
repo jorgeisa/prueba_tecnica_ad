@@ -26,7 +26,10 @@ Instalación de herramientas para trabajar con MYSQL **mysqlclient** y **pymysql
 pip install mysqlclient pymysql
 ```
 
-Instalacion de API 
+Instalacion de OpenAI en Python
+```
+pip install openai
+```
 
 ### Comandos importantes
 
