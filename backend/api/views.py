@@ -7,6 +7,10 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
 
+import openai 
+from .secret_key import API_KEY
+openai.api_key = API_KEY
+
 # Create your views here.
 class InformationView(View):
 
@@ -16,20 +20,33 @@ class InformationView(View):
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
-        informations = list(Information.objects.values())
-        if len(informations)>0:
-            datos = {'message': "Success", 'informations': informations}
-        else:
-            datos = {'message': "Error, Informations not found.", 'informations': []}
+        try:
+            informations = list(Information.objects.values())
+            if len(informations)>0:
+                datos = {'message': "Success", 'informations': informations}
+            else:
+                datos = {'message': "Informations not found.", 'informations': []}
+        except:
+            datos = {'message': "Unexpected Error", 'informations': []}
         return JsonResponse(datos)
 
     def post(self, request):
-        # print(request.body)
-        json_data = json.loads(request.body)
-        prompt = json_data['question']
-        prompt_answer = "answer"
+        try:
+            json_data = json.loads(request.body)
+            prompt = str(json_data['question'])
 
-        # Almacenamiento de pregunta y respuesta
-        # Information.objects.create(question=json_data['question'], answer=json_data['answer'])
-        datos = {'message': "Success", 'answer': prompt_answer}
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo", 
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            prompt_answer = str(response.choices[0].message['content'])
+            
+            # Almacenamiento de pregunta y respuesta
+            Information.objects.create(question=prompt, answer=prompt_answer)
+            datos = {'message': "Success", 'answer': prompt_answer}
+        except:
+            datos = {'message': "Unexpected Error", 'answer': "Error"}
+        
         return JsonResponse(datos)

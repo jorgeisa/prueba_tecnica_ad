@@ -1,1 +1,1 @@
-API_KEY = 'keychatopenia'
+API_KEY = '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'
