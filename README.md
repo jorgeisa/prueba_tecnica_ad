@@ -1,5 +1,5 @@
 # Prueba Tecnica Automata Digital Backend
-El objetivo del proyecto es implementar un chat entre el usuario y modelos de inteligencia artificial. En este caso se usará GPT3.
+El objetivo del proyecto es implementar un chat entre el usuario y modelos de inteligencia artificial. En este caso se usará gpt-3.5-turbo. En este proyecto solamente esta el backend desarrollado en Django.
 
 ## Manual Técnico
 

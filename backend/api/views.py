@@ -3,14 +3,15 @@
 from django.views import View
 from django.http.response import JsonResponse
 from .models import Information
-from .secret_key import API_KEY
-openai.api_key = API_KEY
+
 
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 
 import json
 import openai 
+from .secret_key import API_KEY
+openai.api_key = API_KEY
 
 # Create your views here.
 class InformationView(View):
