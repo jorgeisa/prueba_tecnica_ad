@@ -201,7 +201,7 @@ Al ingresar observamos la aplicación de django "api" creada con anterioridad. E
 Si agregamos dos elementos de "Information" y consultamos nuestra base de datos, veremos que los almacena correctamente.
 ![Imagen_Agregar_Information](/img/img05.png)
 
-Ahora realizaremos las vistas a partir de una clase que sea capaz de procesar las respuestas.
+Ahora realizaremos las vistas a partir de una clase que sea capaz de procesar las respuestas (GET, POST).
 ```python
 # Archivo api>views
 
@@ -238,6 +238,105 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls'))
 ]
+```
+
+Seguimos editando las views en la aplicación "api" de Django.
+
+El metodo "post" de nuestro view se encargará de obtener una respuesta de la pregunta/consulta/frase (prompt) que el usuario realice desde el frontend. La respuesta sera generada por _**GPT-3.5-turbo**_. Se escogió esto debido que _gpt-4_ esta en fase beta no accesible para todos.
+
+Realizamos un archivo llamado "secret_key.py" que será la llave brindada por OpenAI para realizar una API. Para obtener una Key [en este enlace](https://platform.openai.com/account/api-keys)
+
+```python
+# Archivo api>secret_key.py
+API_KEY = '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'
+```
+
+En el archivo de "views" en nuestra aplicación "api" realizamos las importaciones necesarias para realizar el post. 
+
+```python
+# Archivo api>views.py
+
+# Modulo para realizar la clase con las peticiones.
+from django.views import View
+
+# Modulo para retornar una respuesta en formato JSON.
+from django.http.response import JsonResponse
+
+# Modulo con nuestro modelo con el que almacenamos en nuestra base de datos la pregunta realizada y la respuesta.
+from .models import Information
+
+# Modulos para evitar el error de csrf
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+import json
+
+# LLave generada por OpenAI para realizar nuestra API.
+import openai 
+from .secret_key import API_KEY
+openai.api_key = API_KEY
+
+```
+
+Ahora realizamos el dispatch para evitar error de csrf.
+```python
+# Archivo api>views.py
+
+# Codigo que se ejecuta cada vez que realizamos/enviamos/despachemos una petición.
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+```
+
+Metodo POST que genera nuestra respuesta generada por OpenAI. Támbien almacena en nuestra base de datos un modelo "Information" que contendrá la pregunta y la respuesta para realizar un historial. 
+```python
+def post(self, request):
+    # try catch en caso de error inesperado
+    try:
+        # Obtenemos los paremetros enviados (pregunta/prompt)
+        json_data = json.loads(request.body)
+        # Convertimos a string
+        prompt = str(json_data['question'])
+
+        # Generamos la respuesta de OpenAI
+        response = openai.ChatCompletion.create(
+            # Usamos el modelo gpt-3.5-turbo
+            model="gpt-3.5-turbo", 
+            # Mandamos la pregunta
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        # Almacenamos la respuesta como string
+        prompt_answer = str(response.choices[0].message['content'])
+            
+        # Almacenamiento de pregunta y respuesta usando el modelo en nuestra base de datos MySQL
+        Information.objects.create(question=prompt, answer=prompt_answer)
+        # Almacenamos en variable "datos".
+        datos = {'message': "Success", 'answer': prompt_answer}
+    except:
+        # En caso de error
+        datos = {'message': "Unexpected Error", 'answer': "Error"}
+    # Retornamos en formato JSON.
+    return JsonResponse(datos)
+```
+
+Metodo GET que retorna todas las preguntas con su respectiva respuestas hechas con anterioridad por el usuario. Estas son obtenidas por medio del modelo creado en Django. Se almacenan en MySQL.
+```python
+def get(self, request):
+    # try catch en caso de error inesperado
+    try:
+        # Obtenemos la lista de preguntas y respuestas por medio del modelo de Django
+        informations = list(Information.objects.values())
+        # Evaluamos si tiene algun dato dentro de la lista, en dado caso no tenga, retornamos una lista vacía.
+        if len(informations)>0:
+            datos = {'message': "Success", 'informations': informations}
+        else:
+            datos = {'message': "Informations not found.", 'informations': []}
+    except:
+        datos = {'message': "Unexpected Error", 'informations': []}
+    # Retorno de datos en formato JSON.
+    return JsonResponse(datos)
 ```
 
 

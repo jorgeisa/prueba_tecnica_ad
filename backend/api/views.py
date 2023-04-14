@@ -1,20 +1,20 @@
 # from django.shortcuts import render
 # Vista capaz de procesar las respuestas.
 from django.views import View
-from .models import Information
 from django.http.response import JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-import json
-
-import openai 
+from .models import Information
 from .secret_key import API_KEY
 openai.api_key = API_KEY
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+
+import json
+import openai 
 
 # Create your views here.
 class InformationView(View):
 
-    # Codigo que se ejecuta cada vez que realizamos/enviamos/despachemos una petición
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
